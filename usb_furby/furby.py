@@ -21,7 +21,7 @@ class Furby:
         self.speech.say(str(text))
         self.control.move(Move.EARS_UP_MOUTH_OPEN)
         while self.speech.left() > 0.1:
-            t = self.speech.volume(0.1)
+            t = self.speech.volume(0.2)
             self.control.move(Move.EARS_UP_MOUTH_OPEN * t + Move.EARS_UP * (1.0 - t))
             time.sleep(0.01)
 
