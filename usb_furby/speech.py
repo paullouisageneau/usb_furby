@@ -12,7 +12,7 @@ def chunks(lst, n):
 
 
 class Speech:
-    def __init__(self, lang='mb-fr4'):
+    def __init__(self, lang='mb-en1'):
         self.lang = lang
         self.filename = '/tmp/out.wav'
         self.process = None

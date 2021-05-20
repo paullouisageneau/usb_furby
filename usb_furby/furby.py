@@ -7,7 +7,7 @@ import time
 
 
 class Furby:
-    def __init__(self, device='/dev/ttyACM0', lang='mb-fr4'):
+    def __init__(self, device='/dev/ttyACM0', lang='mb-en1'):
         self.control = Control(device)
         self.control.on_light = lambda light: self.on_light(light)
         self.control.start()
