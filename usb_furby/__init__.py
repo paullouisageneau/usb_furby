@@ -1,0 +1,1 @@
+from .furby import Furby
