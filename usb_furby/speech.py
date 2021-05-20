@@ -24,7 +24,7 @@ class Speech:
         self.wait()
         self.process = subprocess.Popen(['espeak-ng',
             '-v', self.lang,
-            '-s', '100',
+            '-s', '80',
             '-p', '50',
             '-w', self.filename,
             text],
