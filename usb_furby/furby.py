@@ -7,11 +7,11 @@ import time
 
 
 class Furby:
-    def __init__(self, device='/dev/ttyACM0', lang='mb-en1'):
+    def __init__(self, device='/dev/ttyACM0', lang='mb-en1', pitch=4):
         self.control = Control(device)
         self.control.on_light = lambda light: self.on_light(light)
         self.control.start()
-        self.speech = Speech(lang)
+        self.speech = Speech(lang, pitch)
 
     def on_light(self, light):
         print("Light: {:d}".format(light))
@@ -38,4 +38,3 @@ class Furby:
         time.sleep(0.5)
         self.control.move(Move.EARS_DOWN_EYES_CLOSED)
         time.sleep(0.5)
-

@@ -12,8 +12,9 @@ def chunks(lst, n):
 
 
 class Speech:
-    def __init__(self, lang='mb-en1'):
+    def __init__(self, lang='mb-en1', pitch=4.0):
         self.lang = lang
+        self.pitch = pitch
         self.filename = '/tmp/out.wav'
         self.process = None
         self.duration = 0.0
@@ -46,9 +47,9 @@ class Speech:
 
             self.begin_time = time.time()
 
-        self.process = subprocess.Popen(['play',
+        self.process = subprocess.Popen(['play',  # play command from sox
             self.filename,
-            'pitch', '400'],
+            'pitch', str(int(self.pitch * 100))],  # pitch in 100ths of semitone
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL)
 
