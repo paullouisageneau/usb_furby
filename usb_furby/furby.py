@@ -1,22 +1,21 @@
-#!/usr/bin/env python3
-
 from .speech import Speech
 from .control import Control, Move
 
 import time
 
-
 class Furby:
     def __init__(self, device='/dev/ttyACM0', lang='mb-en1', pitch=4):
         self.control = Control(device)
-        self.control.on_light = lambda light: self.on_light(light)
-        self.control.start()
         self.speech = Speech(lang, pitch)
+        self.awake = False
 
-    def on_light(self, light):
-        print("Light: {:d}".format(light))
+    def light(self):
+        return self.control.light()
 
     def say(self, text):
+        if not self.awake:
+            self.wakeup()
+
         self.control.move(Move.EARS_UP)
         self.speech.say(str(text))
         self.control.move(Move.EARS_UP_MOUTH_OPEN)
@@ -30,11 +29,19 @@ class Furby:
         time.sleep(0.5)
 
     def wakeup(self):
+        if self.awake:
+            return
+
         self.control.move(Move.EARS_UP)
         time.sleep(0.5)
+        self.awake = True
 
     def sleep(self):
+        if not self.awake:
+            return
+
         self.control.move(Move.EYES_CLOSED)
         time.sleep(0.5)
         self.control.move(Move.EARS_DOWN_EYES_CLOSED)
         time.sleep(0.5)
+        self.awake = False

@@ -1,14 +1,9 @@
 import enum
 import serial
-import threading
-import queue
-import sys
 
-TIMEOUT = 2
+from concurrent.futures import ThreadPoolExecutor
 
-
-def print_err(*args):
-    print(*args, file=sys.stderr)
+TIMEOUT = 5
 
 
 class Move(enum.IntEnum):
@@ -20,55 +15,52 @@ class Move(enum.IntEnum):
     EARS_DOWN_MOUTH_OPEN = 350
 
 
-class Control(threading.Thread):
+class Control:
     def __init__(self, device='/dev/ttyACM0', baudrate=9600):
-        super().__init__()
-        self.serial = serial.Serial(device, baudrate, timeout=1)
-        self.acks = queue.Queue()
-        self.on_light = None
+        self.serial = serial.Serial(device, baudrate, timeout=TIMEOUT)
+        self.executor = ThreadPoolExecutor(max_workers=1)
 
-    def run(self):
-        while self.serial.is_open:
-            self.send('L')
-            while True:
-                cmd = self.read()
-                if not cmd:
-                    break
-                self.process(cmd)
-
-    def send(self, cmd):
+    def write(self, cmd):
         self.serial.write((cmd + '\n').encode())
 
     def read(self):
         return self.serial.readline().decode()
 
-    def process(self, cmd):
-        c = cmd[0]
-        arg = cmd[1:].strip()
-        if c == 'E':
-            print_err("Furby: command error")
-        elif c == 'M':
-            self.acks.put(int(arg))
-        elif c == 'L':
-            if self.on_light is not None:
-                self.on_light(int(arg))
+    def run(self, cmd, arg=None):
+        if arg is not None:
+            self.write('{} {:d}'.format(cmd, int(arg)))
+        else:
+            self.write(cmd)
+
+        ans = self.read()
+        if ans is None:
+            raise TimeoutError("Furby: command timeout")
+        elif ans[0] != cmd[0]:
+            raise RuntimeError("Furby: command error")
+        else:
+            ansarg = ans[1:].strip()
+            return int(ansarg) if len(ansarg) > 0 else None
+
+    def submit(self, cmd, arg=None):
+        return self.executor.submit(self.run, cmd, arg)
+
+    def light(self):
+        light = self.submit('L').result()
+        return light if light is not None else 0
 
     def home(self):
-        self.send('H')
+        self.submit('H').result()
 
     def move(self, target):
-        target = int(target)
-        self.send('M {:d}'.format(target))
         try:
-            while self.acks.get(timeout=TIMEOUT) != target:
+            self.submit('M', int(target)).result()
+        except TimeoutError:
+            try:
+                self.stop()
+            except TimeoutError:
                 pass
-        except queue.Empty:
-            print_err("Furby: mechanical problem")
-            self.stop()
+
+            raise RuntimeError("Furby: mechanical issue")
 
     def stop(self):
-        self.send('S')
-        try:
-            self.acks.get(timeout=TIMEOUT)
-        except queue.Empty:
-            pass
+        self.submit('S').result()

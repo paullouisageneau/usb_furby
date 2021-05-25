@@ -149,10 +149,6 @@ public:
         return abs(distance(targetStep)) <= MOTOR_STEPS_TOLERANCE;
     }
 
-    void stop() {
-        target(currentStep);
-    }
-
     int light() const {
         int value = analogRead(EXT_LIGHT_SENSOR_PIN);
         return map(value, 0, 1023, 0, 255);
@@ -162,6 +158,7 @@ public:
 Furby furby;
 String inputString = "";
 bool targetReached = true;
+bool stopped = false;
 
 // ----------
 
@@ -199,10 +196,12 @@ void loop() {
                 case 'M':
                     furby.target(param.toInt());
                     targetReached = false;
+                    stopped = false;
                     break;
                 case 'S':
-                    furby.stop();
+                    furby.target(furby.current());
                     targetReached = false;
+                    stopped = true;
                     break;
                 case 'C':
                     Serial.print("C ");
@@ -225,7 +224,8 @@ void loop() {
 
     if(!targetReached && furby.reached()) {
         targetReached = true;
-        Serial.print("M ");
+        if(stopped) Serial.print("S ");
+        else Serial.print("M ");
         Serial.println(furby.target());
     }
 }
