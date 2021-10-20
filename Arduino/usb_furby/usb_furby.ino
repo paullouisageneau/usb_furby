@@ -155,6 +155,8 @@ public:
     }
 
     void shutdown() {
+      targetStep = currentStep;
+      motor(0);
       digitalWrite(MOTOR_STANDBY_PIN, LOW);
     }
 };
