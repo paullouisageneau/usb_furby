@@ -102,7 +102,7 @@ public:
             if(distance(0) > HOME_STEPS_TOLERANCE && digitalRead(HOME_SENSOR_PIN) == LOW) {
               currentStep = 0;
             }
-            
+
             if((parity == 0 && value > INT_LIGHT_SENSOR_HIGH_THRESHOLD) ||
                (parity == 1 && value <= INT_LIGHT_SENSOR_LOW_THRESHOLD)) {
                 currentStep = (MOTOR_STEPS + currentStep + motorDirection) % MOTOR_STEPS;
@@ -124,7 +124,7 @@ public:
         else {
             // Target is reached or motor is in the wrong direction
             motor(0);
-            
+
             // The motor does not stop instantaneously
             if(millis() - motorLastTime >= MOTOR_IDLE_DELAY) {
               motorDirection = MOTOR_IDLE;
@@ -152,6 +152,10 @@ public:
     int light() const {
         int value = analogRead(EXT_LIGHT_SENSOR_PIN);
         return map(value, 0, 1023, 0, 255);
+    }
+
+    void shutdown() {
+      digitalWrite(MOTOR_STANDBY_PIN, LOW);
     }
 };
 
@@ -210,6 +214,16 @@ void loop() {
                 case 'L':
                     Serial.print("L ");
                     Serial.println(furby.light());
+                    break;
+                case 'D':
+                    Serial.println("D");
+                    Serial.flush();
+
+                    if(param.length() > 0)
+                      delay(param.toInt() * 100); // 10th of seconds
+
+                    furby.shutdown();
+                    exit(0);
                     break;
                 default:
                     Serial.println("E");

@@ -45,3 +45,6 @@ class Furby:
         self.control.move(Move.EARS_DOWN_EYES_CLOSED)
         time.sleep(0.5)
         self.awake = False
+
+    def shutdown(self, delay=0):
+        self.control.shutdown(delay)

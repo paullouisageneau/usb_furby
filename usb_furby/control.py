@@ -1,5 +1,6 @@
 import enum
 import serial
+import math
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -64,3 +65,6 @@ class Control:
 
     def stop(self):
         self.submit('S').result()
+
+    def shutdown(self, delay=0):
+        self.submit('D', math.ceil(delay * 10)).result()  # 10th of seconds
